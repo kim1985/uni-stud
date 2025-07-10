@@ -27,6 +27,18 @@ public class StudentController {
         return new ResponseEntity<>(studentDTO, HttpStatus.OK);
     }
 
+    @PutMapping("/{studentId}")
+    public ResponseEntity<StudentDTO> updateStudent(@PathVariable Long studentId, @Valid @RequestBody StudentDTO studentDTO) {
+        StudentDTO updatedStudent = studentService.updateStudent(studentId, studentDTO);
+        return new ResponseEntity<>(updatedStudent, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{studentId}")
+    public ResponseEntity<String> deleteStudent(@PathVariable Long studentId) {
+        String status = studentService.deleteStudent(studentId);
+        return new ResponseEntity<>(status, HttpStatus.OK);
+    }
+
     @PostMapping("/add/{studentId}/{courseId}")
     public ResponseEntity<String> addStudent(@PathVariable Long studentId, @PathVariable Long courseId) {
         studentService.addCourseToStudent(studentId, courseId);

@@ -6,6 +6,7 @@ import com.uni.unistud.entity.Student;
 import com.uni.unistud.exception.ResourceNotFoundException;
 import com.uni.unistud.repository.CourseRepository;
 import com.uni.unistud.repository.StudentRepository;
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,9 +30,31 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public StudentDTO getStudentById(Long studentId) {
-        Student student = studentRepository.findById(studentId)
+        Student studentFromDatabase = studentRepository.findById(studentId)
                 .orElseThrow(() -> new ResourceNotFoundException("Student", "studentId", studentId));
-        return modelMapper.map(student, StudentDTO.class);
+        return modelMapper.map(studentFromDatabase, StudentDTO.class);
+    }
+
+    @Override
+    public StudentDTO updateStudent(Long studentId, StudentDTO studentDTO) {
+        Student studentFromDatabase = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student", "studentId", studentId));
+
+        studentFromDatabase.setFirstName(studentDTO.getFirstName());
+        studentFromDatabase.setLastName(studentDTO.getLastName());
+        studentFromDatabase.setEmail(studentDTO.getEmail());
+        Student updatedStudent = studentRepository.save(studentFromDatabase);
+
+        return modelMapper.map(updatedStudent, StudentDTO.class);
+
+    }
+
+    @Override
+    public String deleteStudent(Long studentId) {
+        Student studentFromDatabase = studentRepository.findById(studentId)
+                .orElseThrow(() -> new ResourceNotFoundException("Student", "studentId", studentId));
+        studentRepository.delete(studentFromDatabase);
+        return "Student "+studentId+" deleted";
     }
 
     @Override
