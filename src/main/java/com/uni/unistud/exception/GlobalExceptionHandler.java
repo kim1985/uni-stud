@@ -118,4 +118,19 @@ public class GlobalExceptionHandler {
                 .build();
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    /**
+     * Gestisce eccezioni di corso al completo
+     * Converte CourseFullException in risposta HTTP 409 (Conflict)
+     */
+    @ExceptionHandler(CourseFullException.class)
+    public ResponseEntity<ErrorResponse> handleCourseFullException(CourseFullException ex) {
+        ErrorResponse error = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.CONFLICT.value())
+                .error("Course Full")
+                .message(ex.getMessage())
+                .build();
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
 }

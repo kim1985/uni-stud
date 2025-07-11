@@ -15,6 +15,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/courses")
 @RequiredArgsConstructor
@@ -35,6 +38,29 @@ public class CourseController {
     public ResponseEntity<CourseDTO> createCourse(@Valid @RequestBody CourseDTO courseDTO) {
         CourseDTO createdCourse = courseService.createCourse(courseDTO);
         return new ResponseEntity<>(createdCourse, HttpStatus.CREATED);
+    }
+
+    /**
+     * Recupera statistiche di iscrizione per un corso
+     *
+     * Chiamata: GET http://localhost:8080/api/courses/1/enrollment-stats
+     */
+    @GetMapping("/{courseId}/enrollment-stats")
+    public ResponseEntity<Map<String, Object>> getCourseEnrollmentStats(@PathVariable Long courseId) {
+        CourseDTO course = courseService.getCourseById(courseId);
+
+        Map<String, Object> stats = new HashMap<>();
+        stats.put("courseId", course.getCourseId());
+        stats.put("title", course.getTitle());
+        stats.put("maxCapacity", course.getMaxCapacity());
+        stats.put("currentEnrollment", course.getCurrentEnrollment());
+        stats.put("availableSpots", course.getAvailableSpots());
+        stats.put("isFull", course.getIsFull());
+        stats.put("utilizationPercentage",
+                course.getMaxCapacity() > 0 ?
+                        (course.getCurrentEnrollment() * 100.0 / course.getMaxCapacity()) : 0);
+
+        return ResponseEntity.ok(stats);
     }
 
     /**

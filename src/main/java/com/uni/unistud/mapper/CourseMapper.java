@@ -37,6 +37,13 @@ public class CourseMapper {
         CourseDTO dto = new CourseDTO();
         dto.setCourseId(course.getCourseId());
         dto.setTitle(course.getTitle());
+        dto.setMaxCapacity(course.getMaxCapacity());
+
+        // Calcola statistiche di iscrizione
+        int currentEnrollment = course.getStudents() != null ? course.getStudents().size() : 0;
+        dto.setCurrentEnrollment(currentEnrollment);
+        dto.setAvailableSpots(course.getAvailableSpots());
+        dto.setIsFull(course.isFull());
 
         // Include studenti se presenti, senza i loro corsi (evita cicli infiniti)
         if (course.getStudents() != null && !course.getStudents().isEmpty()) {
@@ -65,6 +72,7 @@ public class CourseMapper {
         Course course = new Course();
         course.setCourseId(dto.getCourseId());
         course.setTitle(dto.getTitle());
+        course.setMaxCapacity(dto.getMaxCapacity() != null ? dto.getMaxCapacity() : 50); // Default 50
 
         return course;
     }
@@ -101,6 +109,13 @@ public class CourseMapper {
         CourseDTO dto = new CourseDTO();
         dto.setCourseId(course.getCourseId());
         dto.setTitle(course.getTitle());
+        dto.setMaxCapacity(course.getMaxCapacity());
+
+        // Calcola statistiche anche senza includere la lista studenti
+        int currentEnrollment = course.getStudents() != null ? course.getStudents().size() : 0;
+        dto.setCurrentEnrollment(currentEnrollment);
+        dto.setAvailableSpots(course.getAvailableSpots());
+        dto.setIsFull(course.isFull());
 
         return dto;
     }

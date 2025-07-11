@@ -4,6 +4,7 @@ import com.uni.unistud.dto.StudentCourseDTO;
 import com.uni.unistud.dto.StudentDTO;
 import com.uni.unistud.entity.Course;
 import com.uni.unistud.entity.Student;
+import com.uni.unistud.exception.CourseFullException;
 import com.uni.unistud.exception.DuplicateResourceException;
 import com.uni.unistud.exception.ResourceNotFoundException;
 import com.uni.unistud.exception.StudentCourseException;
@@ -160,6 +161,14 @@ public class StudentServiceImpl implements StudentService {
         // Verifica che lo studente non sia già iscritto al corso
         if (student.getCourses().contains(course)) {
             throw new StudentCourseException("Lo studente è già iscritto a questo corso");
+        }
+
+        // NUOVA VERIFICA: Controlla se il corso ha ancora posti disponibili
+        if (!course.hasAvailableSpots()) {
+            throw new CourseFullException(
+                    String.format("Il corso '%s' ha raggiunto la capacità massima di %d studenti",
+                            course.getTitle(), course.getMaxCapacity())
+            );
         }
 
         // Aggiunge il corso usando il metodo helper che gestisce la bidirezionalità

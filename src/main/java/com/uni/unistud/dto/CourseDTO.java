@@ -5,6 +5,8 @@
  */
 package com.uni.unistud.dto;
 
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -40,4 +42,33 @@ public class CourseDTO {
      * - Conversione gestita dal CourseMapper
      */
     private Set<StudentDTO> students;
+
+    /**
+     * Capacità massima del corso
+     * Validazioni:
+     * - @Min(1): almeno 1 posto (0 o null = illimitato)
+     * - @Max(500): massimo ragionevole per un corso
+     */
+    @Min(value = 1, message = "La capacità deve essere almeno 1 (0 per illimitato)")
+    @Max(value = 500, message = "La capacità massima consentita è 500")
+    private Integer maxCapacity;
+
+    // Campi derivati per facilitare il frontend
+
+    /**
+     * Numero attuale di studenti iscritti
+     * Calcolato automaticamente dal mapper
+     */
+    private Integer currentEnrollment;
+
+    /**
+     * Numero di posti disponibili
+     * -1 se capacità illimitata
+     */
+    private Integer availableSpots;
+
+    /**
+     * Indica se il corso è al completo
+     */
+    private Boolean isFull;
 }
