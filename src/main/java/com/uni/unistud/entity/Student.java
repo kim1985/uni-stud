@@ -1,46 +1,90 @@
+/**
+ * Entità JPA che rappresenta uno studente nel database
+ * Mappata sulla tabella "students" con relazione many-to-many verso Course
+ */
 package com.uni.unistud.entity;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Entity
-@Table(name = "students")
-@EqualsAndHashCode(exclude = "courses")
-@ToString(exclude = "courses")
+@Data                                      // Lombok: genera getter, setter, toString, equals, hashCode
+@AllArgsConstructor                        // Lombok: costruttore con tutti i parametri
+@NoArgsConstructor                         // Lombok: costruttore vuoto (obbligatorio per JPA)
+@Entity                                    // JPA: questa classe è un'entità del database
+@Table(name = "students")                  // JPA: mappa sulla tabella "students"
+@EqualsAndHashCode(exclude = "courses")    // Lombok: esclude "courses" da equals/hashCode (evita loop infiniti)
+@ToString(exclude = "courses")             // Lombok: esclude "courses" da toString (evita loop infiniti)
 public class Student {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // SEQUENCE se uso postgresql o oracle pag 261
+
+    /**
+     * ID univoco dello studente (chiave primaria)
+     * Generato automaticamente dal database
+     */
+    @Id                                           // JPA: questo campo è la chiave primaria
+    @GeneratedValue(strategy = GenerationType.IDENTITY)  // JPA: auto-incremento (per PostgreSQL/Oracle usare SEQUENCE)
     private Long studentId;
-    @Column(nullable = false)
+
+    /**
+     * Nome dello studente - campo obbligatorio
+     */
+    @Column(nullable = false)                     // JPA: colonna NOT NULL nel database
     private String firstName;
-    @Column(nullable = false)
+
+    /**
+     * Cognome dello studente - campo obbligatorio
+     */
+    @Column(nullable = false)                     // JPA: colonna NOT NULL nel database
     private String lastName;
-    @Column(nullable = false, unique = true)
+
+    /**
+     * Email dello studente - obbligatoria e univoca
+     * Usata come identificatore alternativo
+     */
+    @Column(nullable = false, unique = true)      // JPA: colonna NOT NULL e UNIQUE (con indice automatico)
     private String email;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    /**
+     * Corsi a cui lo studente è iscritto
+     * Relazione many-to-many: uno studente può frequentare molti corsi
+     * Questa è la parte "proprietaria" della relazione
+     *
+     * LAZY: i corsi vengono caricati solo quando servono (risparmia memoria)
+     *
+     * CASCADE spiegato:
+     * - PERSIST: quando salvo uno studente con corsi nuovi, salva automaticamente anche i corsi
+     * - MERGE: quando aggiorno uno studente, aggiorna anche i corsi collegati
+     * - NO DELETE: se cancello uno studente, i corsi rimangono (altri studenti potrebbero frequentarli)
+     */
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})  // JPA: LAZY = carica solo se richiesto, CASCADE = propaga salvataggio/aggiornamento ai corsi
     @JoinTable(
-            name = "student_courses",
-            joinColumns = @JoinColumn(name = "student_id"),
-            inverseJoinColumns = @JoinColumn(name = "course_id")
+            name = "student_courses",                    // JPA: nome della tabella di collegamento
+            joinColumns = @JoinColumn(name = "student_id"),      // JPA: colonna che referenzia Student
+            inverseJoinColumns = @JoinColumn(name = "course_id") // JPA: colonna che referenzia Course
     )
     private Set<Course> courses = new HashSet<>();
 
+    /**
+     * Aggiunge un corso a questo studente
+     * Gestisce correttamente la relazione bidirezionale
+     *
+     * @param course il corso da aggiungere
+     */
     public void addCourse(Course course) {
-        courses.add(course);
-        course.getStudents().add(this);
+        courses.add(course);                // Aggiunge il corso a questo studente
+        course.getStudents().add(this);     // Aggiunge questo studente al corso
     }
+
+    /**
+     * Rimuove un corso da questo studente
+     * Gestisce correttamente la relazione bidirezionale
+     *
+     * @param course il corso da rimuovere
+     */
     public void removeCourse(Course course) {
-        courses.remove(course);
-        course.getStudents().remove(this);
+        courses.remove(course);             // Rimuove il corso da questo studente
+        course.getStudents().remove(this);  // Rimuove questo studente dal corso
     }
 }
