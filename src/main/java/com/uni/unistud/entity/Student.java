@@ -46,6 +46,11 @@ public class Student {
     @Column(nullable = false, unique = true)      // JPA: colonna NOT NULL e UNIQUE (con indice automatico)
     private String email;
 
+    // 1. Aggiungi solo il campo password all'entità Student esistente
+    // NUOVO CAMPO - password criptata
+    @Column(nullable = true) // nullable per mantenere compatibilità con dati esistenti
+    private String password;
+
     /**
      * Corsi a cui lo studente è iscritto
      * Relazione many-to-many: uno studente può frequentare molti corsi

@@ -1,7 +1,6 @@
 package com.uni.unistud.service;
 
-import com.uni.unistud.dto.StudentCourseDTO;
-import com.uni.unistud.dto.StudentDTO;
+import com.uni.unistud.dto.*;
 import com.uni.unistud.entity.Course;
 import com.uni.unistud.entity.Student;
 import com.uni.unistud.exception.CourseFullException;
@@ -11,7 +10,10 @@ import com.uni.unistud.exception.StudentCourseException;
 import com.uni.unistud.mapper.StudentMapper;
 import com.uni.unistud.repository.CourseRepository;
 import com.uni.unistud.repository.StudentRepository;
+import com.uni.unistud.util.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,20 @@ public class StudentServiceImpl implements StudentService {
     private final StudentRepository studentRepository;
     private final CourseRepository courseRepository;
     private final StudentMapper studentMapper;
+
+    // === NUOVI CAMPI PER AUTENTICAZIONE ===
+    /**
+     * Utility per generare e validare token JWT
+     * Utilizzata per creare token dopo login/registrazione
+     */
+    private final JwtUtil jwtUtil;
+
+    /**
+     * Encoder per criptare le password con algoritmo BCrypt
+     * BCrypt è sicuro contro attacchi brute-force (è lento di proposito)
+     * Genera automaticamente il salt per ogni password
+     */
+    private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     /**
      * Crea un nuovo studente verificando che l'email non sia già utilizzata
@@ -225,5 +241,88 @@ public class StudentServiceImpl implements StudentService {
 
         // Converte ogni studente (con i suoi corsi) in DTO
         return studentMapper.toDTOList(students);
+    }
+
+    // === NUOVI METODI PER AUTENTICAZIONE ===
+
+    /**
+     * Registra un nuovo studente con password per l'autenticazione
+     *
+     * Processo:
+     * 1. Verifica che l'email non sia già utilizzata
+     * 2. Cripta la password con BCrypt
+     * 3. Salva lo studente nel database
+     * 4. Restituisce i dati dello studente (senza password per sicurezza)
+     *
+     * NOTA: Non genera automaticamente il token JWT - serve chiamata separata a login()
+     *
+     * @param request dati di registrazione (nome, cognome, email, password)
+     * @return StudentDTO con i dati salvati (password esclusa)
+     * @throws DuplicateResourceException se l'email è già utilizzata
+     */
+    @Override
+    public StudentDTO register(RegisterRequest request) {
+        // CONTROLLO UNICITÀ EMAIL
+        // Importante: previene account duplicati
+        if (studentRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateResourceException("Email già utilizzata");
+        }
+
+        // CREAZIONE STUDENTE
+        Student student = new Student();
+        student.setFirstName(request.getFirstName());
+        student.setLastName(request.getLastName());
+        student.setEmail(request.getEmail());
+
+        // CRIPTAZIONE PASSWORD
+        // BCrypt genera automaticamente un salt univoco per ogni password
+        // La password in chiaro non viene mai salvata nel database
+        student.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        // SALVATAGGIO E CONVERSIONE
+        Student saved = studentRepository.save(student);
+
+        // Converte in DTO (il mapper esclude automaticamente la password)
+        return studentMapper.toDTO(saved);
+    }
+
+    /**
+     * Autentica uno studente esistente e genera token JWT
+     *
+     * Processo:
+     * 1. Cerca lo studente per email nel database
+     * 2. Verifica che la password fornita corrisponda a quella salvata
+     * 3. Genera un token JWT valido per 24 ore
+     * 4. Restituisce token + informazioni utente
+     *
+     * @param request credenziali di accesso (email e password)
+     * @return AuthResponse con token JWT e dati utente
+     * @throws ResourceNotFoundException se l'email non esiste
+     * @throws RuntimeException se la password è errata
+     */
+    @Override
+    public AuthResponse login(LoginRequest request) {
+        // RICERCA STUDENTE PER EMAIL
+        Student student = studentRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new ResourceNotFoundException("Studente non trovato"));
+
+        // VERIFICA PASSWORD
+        // passwordEncoder.matches() confronta:
+        // - password in chiaro fornita dall'utente
+        // - password criptata salvata nel database
+        if (student.getPassword() == null ||
+                !passwordEncoder.matches(request.getPassword(), student.getPassword())) {
+            throw new RuntimeException("Password errata");
+        }
+
+        // GENERAZIONE TOKEN JWT
+        // Il token contiene l'email come 'subject' e scade dopo 24 ore
+        String token = jwtUtil.generateToken(student.getEmail());
+
+        // PREPARAZIONE RISPOSTA
+        String fullName = student.getFirstName() + " " + student.getLastName();
+
+        // Restituisce token + dati utente per il frontend
+        return new AuthResponse(token, student.getEmail(), fullName, "Login effettuato con successo");
     }
 }

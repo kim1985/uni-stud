@@ -1,7 +1,6 @@
 package com.uni.unistud.service;
 
-import com.uni.unistud.dto.StudentCourseDTO;
-import com.uni.unistud.dto.StudentDTO;
+import com.uni.unistud.dto.*;
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -18,4 +17,9 @@ public interface StudentService {
     StudentDTO enrollStudentInCourse(StudentCourseDTO studentCourseDTO);
     StudentDTO unenrollStudentFromCourse(StudentCourseDTO studentCourseDTO);
     List<StudentDTO> getStudentsWithCourses();
+
+    // 4. Service semplice - estende StudentService esistente
+    // NUOVI METODI per autenticazione
+    StudentDTO register(RegisterRequest request);
+    AuthResponse login(LoginRequest request);
 }
