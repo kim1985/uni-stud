@@ -4,9 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,27 +13,23 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "students", uniqueConstraints = {
-        @UniqueConstraint(columnNames = "first_name"),
-        @UniqueConstraint(columnNames = "last_name"),
-        @UniqueConstraint(columnNames = "email")
-})
+@Table(name = "students")
+@EqualsAndHashCode(exclude = "courses")
+@ToString(exclude = "courses")
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) // SEQUENCE se uso postgresql o oracle pag 261
     private Long studentId;
-    @NotBlank
+    @Column(nullable = false)
     private String firstName;
-    @NotBlank
+    @Column(nullable = false)
     private String lastName;
-    @Email
-    @NotBlank
-    @Size(max = 50)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
-            name = "student_course",
+            name = "student_courses",
             joinColumns = @JoinColumn(name = "student_id"),
             inverseJoinColumns = @JoinColumn(name = "course_id")
     )
@@ -44,5 +38,9 @@ public class Student {
     public void addCourse(Course course) {
         courses.add(course);
         course.getStudents().add(this);
+    }
+    public void removeCourse(Course course) {
+        courses.remove(course);
+        course.getStudents().remove(this);
     }
 }

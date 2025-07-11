@@ -1,6 +1,7 @@
 package com.uni.unistud.dto;
 
 import com.uni.unistud.entity.Student;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,6 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class CourseDTO {
     private Long courseId;
+    @NotBlank(message = "Il titolo del corso è obbligatorio")
     private String title;
-    private Set<Student> students = new HashSet<>();
+    private Set<StudentDTO> students;
 }
