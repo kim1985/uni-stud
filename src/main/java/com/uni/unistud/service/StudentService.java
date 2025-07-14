@@ -18,8 +18,18 @@ public interface StudentService {
     StudentDTO unenrollStudentFromCourse(StudentCourseDTO studentCourseDTO);
     List<StudentDTO> getStudentsWithCourses();
 
-    // 4. Service semplice - estende StudentService esistente
-    // NUOVI METODI per autenticazione
-    StudentDTO register(RegisterRequest request);
-    AuthResponse login(LoginRequest request);
+    // 4. METODI AUTENTICAZIONE
+    /**
+     * Registra un nuovo studente nel sistema
+     * @param request dati di registrazione (firstName, lastName, email, password)
+     * @return risposta con token JWT generato
+     */
+    AuthResponse register(AuthRequest request);
+
+    /**
+     * Autentica uno studente esistente
+     * @param request credenziali di accesso (email, password)
+     * @return risposta con token JWT generato
+     */
+    AuthResponse login(AuthRequest request);
 }

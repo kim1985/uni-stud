@@ -261,11 +261,17 @@ public class StudentServiceImpl implements StudentService {
      * @throws DuplicateResourceException se l'email è già utilizzata
      */
     @Override
-    public StudentDTO register(RegisterRequest request) {
+    public AuthResponse  register(AuthRequest request) {
+
+        // Validazione: deve essere una registrazione completa
+        if (!request.isRegistration()) {
+            throw new IllegalArgumentException("Nome e cognome obbligatori per la registrazione");
+        }
+
         // CONTROLLO UNICITÀ EMAIL
         // Importante: previene account duplicati
         if (studentRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateResourceException("Email già utilizzata");
+            throw new DuplicateResourceException("Email già utilizzata: " + request.getEmail());
         }
 
         // CREAZIONE STUDENTE
@@ -280,10 +286,13 @@ public class StudentServiceImpl implements StudentService {
         student.setPassword(passwordEncoder.encode(request.getPassword()));
 
         // SALVATAGGIO E CONVERSIONE
-        Student saved = studentRepository.save(student);
+        Student savedStudent = studentRepository.save(student);
 
-        // Converte in DTO (il mapper esclude automaticamente la password)
-        return studentMapper.toDTO(saved);
+        // Genera token JWT
+        String token = jwtUtil.generateToken(savedStudent.getEmail());
+        String fullName = savedStudent.getFirstName() + " " + savedStudent.getLastName();
+
+        return new AuthResponse(token, savedStudent.getEmail(), fullName, "Registrazione completata con successo");
     }
 
     /**
@@ -301,7 +310,8 @@ public class StudentServiceImpl implements StudentService {
      * @throws RuntimeException se la password è errata
      */
     @Override
-    public AuthResponse login(LoginRequest request) {
+    @Transactional(readOnly = true)
+    public AuthResponse login(AuthRequest request) {
         // RICERCA STUDENTE PER EMAIL
         Student student = studentRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("Studente non trovato"));

@@ -24,15 +24,8 @@ public class AuthController {
      * POST /api/auth/register
      */
     @PostMapping("/register")
-    public ResponseEntity<AuthResponse> register(@Valid @RequestBody RegisterRequest request) {
-        StudentDTO student = studentService.register(request);
-
-        // Crea risposta semplice
-        AuthResponse response = new AuthResponse();
-        response.setEmail(student.getEmail());
-        response.setFullName(student.getFirstName() + " " + student.getLastName());
-        response.setMessage("Registrazione completata");
-
+    public ResponseEntity<AuthResponse> register(@Valid @RequestBody AuthRequest request) {
+        AuthResponse  response = studentService.register(request);
         return ResponseEntity.ok(response);
     }
 
@@ -41,7 +34,7 @@ public class AuthController {
      * POST /api/auth/login
      */
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody AuthRequest request) {
         AuthResponse response = studentService.login(request);
         return ResponseEntity.ok(response);
     }
