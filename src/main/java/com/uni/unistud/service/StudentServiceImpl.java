@@ -48,29 +48,6 @@ public class StudentServiceImpl implements StudentService {
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     /**
-     * Crea un nuovo studente verificando che l'email non sia già utilizzata
-     * L'email è il campo univoco per identificare gli studenti
-     *
-     * @param studentDTO dati dello studente da creare
-     * @return studente creato con ID generato
-     * @throws DuplicateResourceException se l'email è già utilizzata
-     */
-    @Override
-    public StudentDTO createStudent(StudentDTO studentDTO) {
-        // Verifica unicità email prima della creazione
-        if (studentRepository.existsByEmail(studentDTO.getEmail())) {
-            throw new DuplicateResourceException("Studente con email " + studentDTO.getEmail() + " già esistente");
-        }
-
-        // Converte DTO in entità e salva nel database
-        Student student = studentMapper.toEntity(studentDTO);
-        Student savedStudent = studentRepository.save(student);
-
-        // Restituisce l'entità salvata convertita in DTO
-        return studentMapper.toDTO(savedStudent);
-    }
-
-    /**
      * Aggiorna i dati di uno studente esistente
      * Verifica che la nuova email non sia già utilizzata da un altro studente
      *

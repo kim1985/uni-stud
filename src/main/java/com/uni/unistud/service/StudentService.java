@@ -6,17 +6,17 @@ import jakarta.validation.Valid;
 import java.util.List;
 
 public interface StudentService {
-    StudentDTO createStudent(StudentDTO studentDTO);
 
+    // === METODI CRUD ===
     StudentDTO updateStudent(Long studentId, StudentDTO studentDTO);
-
     StudentDTO getStudentById(Long studentId);
-
     List<StudentDTO> getAllStudents();
+    List<StudentDTO> getStudentsWithCourses();
     void deleteStudent(Long studentId);
+
+    // === METODI ISCRIZIONE CORSI ===
     StudentDTO enrollStudentInCourse(StudentCourseDTO studentCourseDTO);
     StudentDTO unenrollStudentFromCourse(StudentCourseDTO studentCourseDTO);
-    List<StudentDTO> getStudentsWithCourses();
 
     // 4. METODI AUTENTICAZIONE
     /**

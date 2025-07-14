@@ -23,26 +23,10 @@ public class StudentController {
     private final StudentService studentService;
 
     /**
-     * Crea un nuovo studente
-     *
-     * Chiamata: POST http://localhost:8080/api/students
-     * Body JSON:
-     * {
-     *   "firstName": "Anna",
-     *   "lastName": "Verdi",
-     *   "email": "anna.verdi@university.it"
-     * }
-     */
-    @PostMapping
-    public ResponseEntity<StudentDTO> createStudent(@Valid @RequestBody StudentDTO studentDTO) {
-        StudentDTO createdStudent = studentService.createStudent(studentDTO);
-        return new ResponseEntity<>(createdStudent, HttpStatus.CREATED);
-    }
-
-    /**
      * Aggiorna un studente esistente
      *
      * Chiamata: PUT http://localhost:8080/api/students/15
+     * Header: Authorization: Bearer <token>
      * Body JSON:
      * {
      *   "firstName": "Anna Maria",
@@ -61,6 +45,7 @@ public class StudentController {
      * Recupera un singolo studente con i suoi corsi
      *
      * Chiamata: GET http://localhost:8080/api/students/15
+     * Header: Authorization: Bearer <token>
      */
     @GetMapping("/{studentId}")
     public ResponseEntity<StudentDTO> getStudentById(@PathVariable Long studentId) {
@@ -72,6 +57,7 @@ public class StudentController {
      * Recupera tutti gli studenti (senza corsi)
      *
      * Chiamata: GET http://localhost:8080/api/students
+     * Header: Authorization: Bearer <token>
      */
     @GetMapping
     public ResponseEntity<List<StudentDTO>> getAllStudents() {
@@ -83,6 +69,7 @@ public class StudentController {
      * Recupera tutti gli studenti con i loro corsi
      *
      * Chiamata: GET http://localhost:8080/api/students/with-courses
+     * Header: Authorization: Bearer <token>
      */
     @GetMapping("/with-courses")
     public ResponseEntity<List<StudentDTO>> getStudentsWithCourses() {
@@ -94,6 +81,7 @@ public class StudentController {
      * Elimina uno studente
      *
      * Chiamata: DELETE http://localhost:8080/api/students/15
+     * Header: Authorization: Bearer <token>
      */
     @DeleteMapping("/{studentId}")
     public ResponseEntity<Void> deleteStudent(@PathVariable Long studentId) {
@@ -105,6 +93,7 @@ public class StudentController {
      * Iscrive uno studente a un corso
      *
      * Chiamata: POST http://localhost:8080/api/students/enroll
+     * Header: Authorization: Bearer <token>
      * Body JSON:
      * {
      *   "studentId": 15,
@@ -121,6 +110,7 @@ public class StudentController {
      * Disiscrive uno studente da un corso
      *
      * Chiamata: POST http://localhost:8080/api/students/unenroll
+     * Header: Authorization: Bearer <token>
      * Body JSON:
      * {
      *   "studentId": 15,
